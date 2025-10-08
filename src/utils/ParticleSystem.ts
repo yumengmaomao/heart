@@ -92,7 +92,7 @@ export class ParticleSystem {
         const canvasWidth = this.#canvas.clientWidth
         const canvasHeight = this.#canvas.clientHeight
         const DESIGN_BASE_WIDTH = 1200
-        const MIN_LAYOUT_SCALE = 0.5
+        const MIN_LAYOUT_SCALE = 0.6
         const MAX_LAYOUT_SCALE = 1.0
         const layoutScale = Math.max(MIN_LAYOUT_SCALE, Math.min(MAX_LAYOUT_SCALE, canvasWidth / DESIGN_BASE_WIDTH))
         const MIN_TEXT_OFFSET_PERCENT = 0.22
