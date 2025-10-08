@@ -91,11 +91,11 @@ export class ParticleSystem {
     #initializeParticles() {
         const canvasWidth = this.#canvas.clientWidth
         const canvasHeight = this.#canvas.clientHeight
-        const DESIGN_BASE_WIDTH = 1700
-        const MIN_LAYOUT_SCALE = 0.3
+        const DESIGN_BASE_WIDTH = 1200
+        const MIN_LAYOUT_SCALE = 0.5
         const MAX_LAYOUT_SCALE = 1.0
         const layoutScale = Math.max(MIN_LAYOUT_SCALE, Math.min(MAX_LAYOUT_SCALE, canvasWidth / DESIGN_BASE_WIDTH))
-        const MIN_TEXT_OFFSET_PERCENT = 0.1
+        const MIN_TEXT_OFFSET_PERCENT = 0.22
         const MAX_TEXT_OFFSET_PERCENT = 0.45
         const normalizedScale = (layoutScale - MIN_LAYOUT_SCALE) / (MAX_LAYOUT_SCALE - MIN_LAYOUT_SCALE)
         const dynamicTextOffsetPercent =
