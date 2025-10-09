@@ -1,4 +1,3 @@
-// --- 粒子类定义 (无改动) ---
 class Particle {
     x: number
     y: number
@@ -25,7 +24,14 @@ class Particle {
         this.size = baseParticleSize * (Math.random() * 0.5 + 0.5)
         this.color = particleColor
     }
-    update(attractionForce: number, wanderStrength: number, friction: number): void {
+    update(
+        attractionForce: number,
+        wanderStrength: number,
+        friction: number,
+        tick: number,
+        hueSpread: number,
+        hueShiftSpeed: number
+    ): void {
         const baseDx = this.originX - this.x
         const baseDy = this.originY - this.y
         this.vx += baseDx * attractionForce + (Math.random() - 0.5) * wanderStrength
@@ -34,6 +40,11 @@ class Particle {
         this.vy *= friction
         this.x += this.vx
         this.y += this.vy
+
+        const positionOffset = this.y * hueSpread
+        const timeOffset = tick * hueShiftSpeed
+        const hue = (positionOffset + timeOffset) % 360
+        this.color = `hsl(${hue}, 100%, 70%)`
     }
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = this.color
@@ -43,21 +54,18 @@ class Particle {
     }
 }
 
-// --- 动画引擎类 ---
 export class ParticleSystem {
     #canvas: HTMLCanvasElement
     #ctx: CanvasRenderingContext2D
     #particles: Particle[] = []
     #animationFrameId?: number
+    #tick: number = 0
 
     constructor(canvas: HTMLCanvasElement) {
         this.#canvas = canvas
         const context = canvas.getContext("2d", { willReadFrequently: true })
-        if (!context) {
-            throw new Error("Could not get 2D context from canvas")
-        }
+        if (!context) throw new Error("Could not get 2D context from canvas")
         this.#ctx = context
-
         this.resize = this.resize.bind(this)
     }
 
@@ -70,15 +78,11 @@ export class ParticleSystem {
 
     public stop() {
         window.removeEventListener("resize", this.#debouncedResize)
-        if (this.#animationFrameId) {
-            cancelAnimationFrame(this.#animationFrameId)
-        }
+        if (this.#animationFrameId) cancelAnimationFrame(this.#animationFrameId)
     }
 
     public resize() {
-        if (this.#animationFrameId) {
-            cancelAnimationFrame(this.#animationFrameId)
-        }
+        if (this.#animationFrameId) cancelAnimationFrame(this.#animationFrameId)
         const rect = this.#canvas.getBoundingClientRect()
         const dpr = window.devicePixelRatio || 1
         this.#canvas.width = rect.width * dpr
@@ -92,11 +96,11 @@ export class ParticleSystem {
         const canvasWidth = this.#canvas.clientWidth
         const canvasHeight = this.#canvas.clientHeight
         const DESIGN_BASE_WIDTH = 1200
-        const MIN_LAYOUT_SCALE = 0.6
+        const MIN_LAYOUT_SCALE = 0.5
         const MAX_LAYOUT_SCALE = 1.0
         const layoutScale = Math.max(MIN_LAYOUT_SCALE, Math.min(MAX_LAYOUT_SCALE, canvasWidth / DESIGN_BASE_WIDTH))
-        const MIN_TEXT_OFFSET_PERCENT = 0.22
-        const MAX_TEXT_OFFSET_PERCENT = 0.45
+        const MIN_TEXT_OFFSET_PERCENT = 0.19
+        const MAX_TEXT_OFFSET_PERCENT = 0.39
         const normalizedScale = (layoutScale - MIN_LAYOUT_SCALE) / (MAX_LAYOUT_SCALE - MIN_LAYOUT_SCALE)
         const dynamicTextOffsetPercent =
             MIN_TEXT_OFFSET_PERCENT + (MAX_TEXT_OFFSET_PERCENT - MIN_TEXT_OFFSET_PERCENT) * normalizedScale
@@ -154,9 +158,12 @@ export class ParticleSystem {
         const ATTRACTION_FORCE = 0.01
         const WANDER_STRENGTH = 0.1
         const FRICTION = 0.93
+        const HUE_SPREAD = 0.4
+        const HUE_SHIFT_SPEED = 0.5
+        this.#tick++
         this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height)
         this.#particles.forEach((p) => {
-            p.update(ATTRACTION_FORCE, WANDER_STRENGTH, FRICTION)
+            p.update(ATTRACTION_FORCE, WANDER_STRENGTH, FRICTION, this.#tick, HUE_SPREAD, HUE_SHIFT_SPEED)
             p.draw(this.#ctx)
         })
         this.#animationFrameId = requestAnimationFrame(this.#animate)
@@ -168,23 +175,19 @@ export class ParticleSystem {
         const dpr = window.devicePixelRatio || 1
         offscreenCanvas.width = this.#canvas.width
         offscreenCanvas.height = this.#canvas.height
-
-        tempCtx.font = `bold ${fontSize * dpr}px sans-serif` // 在离屏Canvas上绘制时也考虑dpr
+        tempCtx.font = `bold ${fontSize * dpr}px sans-serif`
         tempCtx.fillStyle = "white"
         tempCtx.textAlign = "center"
         tempCtx.textBaseline = "middle"
         tempCtx.fillText(text, textCenterX * dpr, textCenterY * dpr)
-
         const imageData = tempCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height)
         const data = imageData.data
         const points: Array<[number, number]> = []
         const samplingStep = 4
-
         for (let y = 0; y < offscreenCanvas.height; y += samplingStep) {
             for (let x = 0; x < offscreenCanvas.width; x += samplingStep) {
                 const index = (y * offscreenCanvas.width + x) * 4 + 3
                 if (index < data.length) {
-                    // --- 修复 2: 使用非空断言 `!` ---
                     const alpha = data[index]!
                     if (alpha > 128) {
                         points.push([x / dpr, y / dpr])
