@@ -33,8 +33,8 @@ export default class Particle {
         this.x += (targetX - this.x) * easing + dx_attraction * attraction + randomForceX
         this.y += (targetY - this.y) * easing + dy_attraction * attraction + randomForceY
 
-        const HUE_SPREAD = 0.3
-        const HUE_SHIFT_SPEED = 0.5
+        const HUE_SPREAD = 0.25
+        const HUE_SHIFT_SPEED = 0.7
         const positionOffset = this.y * HUE_SPREAD
         const timeOffset = tick * HUE_SHIFT_SPEED
         this.hue = (positionOffset + timeOffset) % 360

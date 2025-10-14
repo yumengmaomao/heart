@@ -111,7 +111,7 @@ if (canvas) {
             const particles = allInitialPoints.map((p) => new Particle(p.type, p.x, p.y, p.brightness))
 
             function animate() {
-                const frame = tick / 140
+                const frame = tick / 100
                 const ratio = 30 * curve(frame)
                 ctx.clearRect(0, 0, canvas.width, canvas.height)
                 particles.forEach((particle) => {
