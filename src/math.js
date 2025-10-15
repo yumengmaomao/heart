@@ -65,7 +65,7 @@ export function applyInwardForce(point, centerX, centerY, beta, spread) {
 /**
  * 心跳曲线函数，模拟心跳的节拍。
  * 它的原理是利用正弦函数 sin() 的周期性，生成一个平滑波动的数值。
- * 输入 p (由时间 tick 计算而来)，输出一个在正负数之间变化的值，代表心跳的力度和方向。
+ *
  * @param {number} p - 时间参数
  */
 
@@ -76,7 +76,7 @@ export function curve(p) {
  * 心脏主体搏动函数，计算粒子跳动时的目标位置。
  * @param {number} x, y - 粒子的原始坐标
  * @param {number} centerX, centerY - 中心点
- * @param {number} ratio - 当前的搏动强度 (由 curve 函数计算)
+ * @param {number} ratio - 当前的搏动强度
  */
 export function calc_position(x, y, centerX, centerY, ratio) {
     const force = 1 / ((x - centerX) ** 2 + (y - centerY) ** 2) ** 0.49
